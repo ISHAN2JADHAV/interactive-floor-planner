@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FloorPlan Studio Pro - Interactive Event & Seating Planner</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body class="theme-dark">
+
+  <!-- Application Top Navigation Bar -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="app-brand">
+        <div class="brand-logo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="3" ry="3"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <circle cx="15.5" cy="8.5" r="1.5"></circle>
+            <circle cx="12" cy="15.5" r="1.5"></circle>
+            <path d="M7 12h10"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">FloorPlan<span class="gradient-text">Pro</span></span>
+          <span class="brand-version">v2.5</span>
+        </div>
+      </div>
+
+      <div class="divider-v"></div>
+
+      <!-- Project Name & Rename Input -->
+      <div class="project-info">
+        <input type="text" id="project-title-input" class="project-title" value="Grand Ballroom Gala 2026" title="Click to rename project">
+        <div class="project-badge-row">
+          <span class="status-indicator live" id="save-indicator">
+            <span class="pulse-dot"></span>
+            <span id="save-status-text">Autosaved</span>
+          </span>
+          <span class="scale-indicator" id="scale-badge" title="Canvas Scale">1m = 40px</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Quick Modes & Stats -->
+    <div class="header-center">
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="design" id="mode-design-btn" title="Design & Layout Mode">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Layout
+        </button>
+        <button class="mode-tab" data-mode="seating" id="mode-seating-btn" title="Guest Seating & Dietary View">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Seating & Guests
+        </button>
+        <button class="mode-tab" data-mode="present" id="mode-present-btn" title="Presentation & Fullscreen View">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Present
+        </button>
+      </div>
+    </div>
+
+    <!-- Header Actions Right -->
+    <div class="header-right">
+      <!-- Undo / Redo -->
+      <div class="btn-group">
+        <button class="icon-btn" id="btn-undo" title="Undo (Ctrl+Z)" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-redo" title="Redo (Ctrl+Y)" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg>
+        </button>
+      </div>
+
+      <div class="divider-v"></div>
+
+      <!-- Quick Templates -->
+      <button class="btn btn-secondary" id="btn-open-templates" title="Load Sample Venue Template">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Templates
+      </button>
+
+      <!-- Guests Drawer Toggle -->
+      <button class="btn btn-secondary" id="btn-open-guest-manager">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        Guests (<span id="seated-ratio-header">0/0</span>)
+      </button>
+
+      <!-- Export Menu Dropdown -->
+      <div class="dropdown-container">
+        <button class="btn btn-primary" id="btn-export-dropdown">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export & Print
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="dropdown-menu" id="export-menu">
+          <button class="dropdown-item" id="export-png-4k">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            High-Resolution Image (PNG)
+          </button>
+          <button class="dropdown-item" id="export-svg">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            Scalable Vector Graphics (SVG)
+          </button>
+          <button class="dropdown-item" id="export-pdf-report">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Print Seating Chart & Report (PDF)
+          </button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" id="export-json">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Save Project JSON File
+          </button>
+          <button class="dropdown-item" id="import-json-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Load Project JSON File
+          </button>
+          <input type="file" id="import-json-input" accept=".json" style="display: none;">
+          <button class="dropdown-item" id="export-guest-csv">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            Export Guest Roster (CSV)
+          </button>
+        </div>
+      </div>
+
+      <!-- Shortcuts / Help -->
+      <button class="icon-btn" id="btn-shortcuts-modal" title="Keyboard Shortcuts (?)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Application Body Grid -->
+  <div class="app-layout">
+    
+    <!-- Left Sidebar: Palette & Tools -->
+    <aside class="sidebar-left" id="sidebar-left">
+      <!-- Tab Controls for Left Sidebar -->
+      <div class="sidebar-tabs">
+        <button class="sidebar-tab-btn active" data-lefttab="elements">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Elements
+        </button>
+        <button class="sidebar-tab-btn" data-lefttab="layers">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          Layers & CAD
+        </button>
+        <button class="sidebar-tab-btn" data-lefttab="collab">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+          Collab
+        </button>
+      </div>
+
+      <!-- Tab Content: Elements Palette -->
+      <div class="left-tab-content active" id="tab-elements">
+        
+        <!-- Table Shapes Section -->
+        <div class="accordion-group open">
+          <div class="accordion-header">
+            <span>Tables & Seating</span>
+            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="accordion-body">
+            <div class="palette-grid">
+              <div class="palette-card" data-create="round" title="Standard Round Banquet Table">
+                <div class="preview-icon">
+                  <div class="shape-round"></div>
+                </div>
+                <div class="card-meta">
+                  <strong>Round Table</strong>
+                  <small>6-12 Seats</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="rect" title="Standard Rectangular Banquet / Trestle Table">
+                <div class="preview-icon">
+                  <div class="shape-rect"></div>
+                </div>
+                <div class="card-meta">
+                  <strong>Rect Table</strong>
+                  <small>4-12 Seats</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="square" title="Square Table">
+                <div class="preview-icon">
+                  <div class="shape-square"></div>
+                </div>
+                <div class="card-meta">
+                  <strong>Square Table</strong>
+                  <small>4 or 8 Seats</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="oval" title="Oval / Imperial Conference Table">
+                <div class="preview-icon">
+                  <div class="shape-oval"></div>
+                </div>
+                <div class="card-meta">
+                  <strong>Oval Table</strong>
+                  <small>8-16 Seats</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="cocktail" title="High-top Standing Cocktail Table">
+                <div class="preview-icon">
+                  <div class="shape-cocktail"></div>
+                </div>
+                <div class="card-meta">
+                  <strong>Cocktail Table</strong>
+                  <small>Standing / High</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="classroom" title="Classroom / Conference Rows">
+                <div class="preview-icon">
+                  <div class="shape-classroom"></div>
+                </div>
+                <div class="card-meta">
+                  <strong>Conference Row</strong>
+                  <small>Auditorium style</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="ushape" title="U-Shape Meeting / Head Table">
+                <div class="preview-icon">
+                  <div class="shape-ushape"></div>
+                </div>
+                <div class="card-meta">
+                  <strong>U-Shape Table</strong>
+                  <small>Executive Setup</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="serpentine" title="Curved Serpentine Buffet/Table">
+                <div class="preview-icon">
+                  <div class="shape-serpentine"></div>
+                </div>
+                <div class="card-meta">
+                  <strong>Serpentine</strong>
+                  <small>Curved Flow</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Venue Fixtures Section -->
+        <div class="accordion-group open">
+          <div class="accordion-header">
+            <span>Staging & Fixtures</span>
+            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="accordion-body">
+            <div class="palette-grid">
+              <div class="palette-card" data-create="stage" title="Stage / Platform">
+                <div class="preview-icon stage-icon">STAGE</div>
+                <div class="card-meta">
+                  <strong>Main Stage</strong>
+                  <small>Platform / Riser</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="dancefloor" title="Dance Floor Section">
+                <div class="preview-icon dance-icon">DANCE</div>
+                <div class="card-meta">
+                  <strong>Dance Floor</strong>
+                  <small>Checkered / Wood</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="bar" title="Beverage Bar / Buffet Station">
+                <div class="preview-icon bar-icon">BAR</div>
+                <div class="card-meta">
+                  <strong>Bar / Buffet</strong>
+                  <small>Service Station</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="djbooth" title="DJ Booth & Sound Rig">
+                <div class="preview-icon dj-icon">DJ</div>
+                <div class="card-meta">
+                  <strong>DJ & Audio</strong>
+                  <small>AV Console</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="photobooth" title="Photo Booth / Backdrop">
+                <div class="preview-icon photo-icon">PHOTO</div>
+                <div class="card-meta">
+                  <strong>Photo Booth</strong>
+                  <small>Backdrop / Kiosk</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="lounge" title="VIP Lounge Sofa">
+                <div class="preview-icon lounge-icon">SOFA</div>
+                <div class="card-meta">
+                  <strong>Lounge Seating</strong>
+                  <small>Sectional Couch</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Architectural Walls & Zones Section -->
+        <div class="accordion-group">
+          <div class="accordion-header">
+            <span>Walls, Columns & Zones</span>
+            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="accordion-body">
+            <div class="palette-grid">
+              <div class="palette-card" data-create="wall" title="Solid Wall Partition">
+                <div class="preview-icon wall-icon"></div>
+                <div class="card-meta">
+                  <strong>Wall / Divider</strong>
+                  <small>Architectural</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="pillar" title="Structural Pillar / Column">
+                <div class="preview-icon pillar-icon"></div>
+                <div class="card-meta">
+                  <strong>Pillar / Column</strong>
+                  <small>Obstacle</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="door" title="Entrance / Emergency Exit">
+                <div class="preview-icon door-icon">EXIT</div>
+                <div class="card-meta">
+                  <strong>Exit / Door</strong>
+                  <small>Pathway</small>
+                </div>
+              </div>
+
+              <div class="palette-card" data-create="zone" title="Custom Floor Zone Area">
+                <div class="preview-icon zone-icon">ZONE</div>
+                <div class="card-meta">
+                  <strong>Floor Zone</strong>
+                  <small>Color Overlay</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Tab Content: Layers & CAD Blueprint -->
+      <div class="left-tab-content" id="tab-layers">
+        <div class="sidebar-section">
+          <span class="sidebar-title">Background Blueprint / CAD</span>
+          <p class="section-desc">Upload a venue floor plan CAD/PNG underlay to trace and align elements to scale.</p>
+          
+          <div class="file-dropzone" id="blueprint-dropzone">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>Upload Reference Blueprint</span>
+            <small>PNG, JPG, SVG, CAD Render</small>
+            <input type="file" id="blueprint-input" accept="image/*" class="hidden-input">
+          </div>
+
+          <div id="blueprint-controls" style="display:none; margin-top:12px; gap:8px;" class="flex-column">
+            <div class="form-group">
+              <div class="flex-between">
+                <label>Blueprint Opacity</label>
+                <span id="bp-opacity-val">40%</span>
+              </div>
+              <input type="range" id="bp-opacity-slider" min="5" max="100" value="40">
+            </div>
+            <div class="flex-row" style="gap:8px;">
+              <button class="btn btn-secondary flex-1" id="btn-toggle-bp">Hide</button>
+              <button class="btn btn-danger flex-1" id="btn-remove-bp">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider-h"></div>
+
+        <div class="sidebar-section">
+          <span class="sidebar-title">Canvas Scale & Dimensions</span>
+          <div class="form-group">
+            <label>Real Venue Dimensions</label>
+            <div class="flex-row" style="gap:6px; align-items:center;">
+              <input type="number" id="venue-width-m" class="form-control" value="30" min="5" max="200" title="Width (meters)">
+              <span class="unit-text">m ×</span>
+              <input type="number" id="venue-height-m" class="form-control" value="20" min="5" max="200" title="Height (meters)">
+              <span class="unit-text">m</span>
+            </div>
+          </div>
+          <button class="btn btn-secondary" id="btn-apply-venue-size" style="margin-top:6px; width:100%;">
+            Resize Venue Canvas
+          </button>
+        </div>
+
+        <div class="divider-h"></div>
+
+        <div class="sidebar-section">
+          <span class="sidebar-title">Display Layers</span>
+          <div class="layer-toggle-list">
+            <label class="layer-toggle-item">
+              <input type="checkbox" id="layer-grid" checked>
+              <span>Coordinate Grid</span>
+            </label>
+            <label class="layer-toggle-item">
+              <input type="checkbox" id="layer-seats" checked>
+              <span>Seat Circles & Numbers</span>
+            </label>
+            <label class="layer-toggle-item">
+              <input type="checkbox" id="layer-guest-names" checked>
+              <span>Guest Name Tags</span>
+            </label>
+            <label class="layer-toggle-item">
+              <input type="checkbox" id="layer-dimensions" checked>
+              <span>Table Dimension Badges</span>
+            </label>
+            <label class="layer-toggle-item">
+              <input type="checkbox" id="layer-zones" checked>
+              <span>Floor Zones & Boundaries</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Collaboration & Baton -->
+      <div class="left-tab-content" id="tab-collab">
+        <div class="sidebar-section">
+          <span class="sidebar-title">Active Role (Baton Lock)</span>
+          <div class="role-badge-card">
+            <div class="role-avatar" id="current-role-avatar">P</div>
+            <div class="role-info">
+              <strong id="current-role-name">Lead Event Planner</strong>
+              <span class="lock-status-chip has-lock" id="baton-chip">
+                <span class="pulse-dot"></span> Holding Edit Lock
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:12px;">
+            <label>Switch Active Persona</label>
+            <select class="form-control" id="role-select">
+              <option value="planner">Event Planner (Owner - Full Access)</option>
+              <option value="venue">Venue Operations Manager (Full Access)</option>
+              <option value="client">Client / Host (Read-Only Review)</option>
+              <option value="caterer">Catering Head (Dietary View)</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" id="btn-toggle-baton" style="margin-top:8px; width:100%;">
+            Pass Edit Baton to Client
+          </button>
+        </div>
+
+        <div class="divider-h"></div>
+
+        <div class="sidebar-section flex-1 flex-column" style="min-height:220px;">
+          <div class="flex-between">
+            <span class="sidebar-title">Audit Change Stream</span>
+            <button class="btn-text-sm" id="btn-clear-log">Clear</button>
+          </div>
+          <div class="activity-stream" id="activity-stream">
+            <!-- Activity log entries injected via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Quick Status -->
+      <div class="sidebar-footer">
+        <div class="grid-snap-switch">
+          <label class="switch-label">
+            <input type="checkbox" id="chk-grid-snap" checked>
+            <span class="switch-slider"></span>
+          </label>
+          <span>Snap Grid (<span id="grid-size-text">20px</span>)</span>
+        </div>
+        <div class="collision-switch">
+          <label class="switch-label">
+            <input type="checkbox" id="chk-collision-block" checked>
+            <span class="switch-slider"></span>
+          </label>
+          <span>Prevent Overlaps</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center Canvas Workspace Area -->
+    <main class="canvas-workspace" id="workspace-container">
+
+      <!-- Lock Banner when read-only -->
+      <div class="banner-readonly" id="readonly-banner" style="display:none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Viewer Mode: Lead Planner currently holds the editing baton. Click 'Request Edit Access' to make changes.</span>
+      </div>
+
+      <!-- Interactive Floor Plan Canvas -->
+      <div class="canvas-viewport" id="viewport">
+        <canvas id="main-canvas"></canvas>
+      </div>
+
+      <!-- Floating Quick Canvas HUD (Top-Center) -->
+      <div class="floating-hud top-hud" id="selection-quick-bar" style="display: none;">
+        <div class="hud-item-label" id="hud-table-label">Table 1</div>
+        <div class="divider-v"></div>
+        <button class="hud-btn" id="hud-btn-duplicate" title="Duplicate (Ctrl+D)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+        <button class="hud-btn" id="hud-btn-rotate-45" title="Rotate +45° (R)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        </button>
+        <button class="hud-btn" id="hud-btn-auto-seat" title="Auto-Assign Guests">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3-3m0 0l-3 3m3-3v8"/></svg>
+        </button>
+        <button class="hud-btn" id="hud-btn-lock" title="Lock Position">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </button>
+        <button class="hud-btn text-danger" id="hud-btn-delete" title="Delete (Del)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        </button>
+      </div>
+
+      <!-- Floating Alignment Helper (shows on multi-select) -->
+      <div class="floating-hud align-hud" id="multi-align-bar" style="display: none;">
+        <span class="hud-count"><span id="selected-count">0</span> items</span>
+        <button class="hud-btn" id="btn-align-left" title="Align Left">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="18" y1="18" x2="3" y2="18"/></svg>
+        </button>
+        <button class="hud-btn" id="btn-align-center" title="Align Horizontal Center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"/><rect x="6" y="5" width="12" height="4"/><rect x="4" y="15" width="16" height="4"/></svg>
+        </button>
+        <button class="hud-btn" id="btn-align-top" title="Align Top">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="3" x2="20" y2="3"/><rect x="6" y="7" width="4" height="12"/><rect x="14" y="7" width="4" height="8"/></svg>
+        </button>
+        <button class="hud-btn" id="btn-distribute-h" title="Distribute Horizontally">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="6" width="3" height="12"/><rect x="11" y="6" width="3" height="12"/><rect x="18" y="6" width="3" height="12"/></svg>
+        </button>
+      </div>
+
+      <!-- Floating Bottom Tool Bar (Zoom & Navigation) -->
+      <div class="floating-controls-bottom">
+        <div class="tool-pill">
+          <button class="pill-btn active" id="btn-tool-select" title="Selection & Move Tool (V)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
+          </button>
+          <button class="pill-btn" id="btn-tool-pan" title="Pan Hand Tool (H / Space+Drag)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 11V6a2 2 0 0 0-4 0v4"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 0 1 4 4v4a8 8 0 0 1-16 0v-2"/></svg>
+          </button>
+          <button class="pill-btn" id="btn-tool-ruler" title="Tape Measure Tool (M)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.3 15.3l-6.6-6.6-8.5 8.5 6.6 6.6 8.5-8.5z"/><path d="M10.5 13.5l1.5-1.5"/><path d="M13.5 16.5l1.5-1.5"/></svg>
+          </button>
+        </div>
+
+        <div class="zoom-pill">
+          <button class="pill-btn" id="btn-zoom-out" title="Zoom Out (-)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <span class="zoom-text" id="zoom-indicator">100%</span>
+          <button class="pill-btn" id="btn-zoom-in" title="Zoom In (+)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button class="pill-btn text-xs" id="btn-zoom-fit" title="Fit to Screen (Shift+1)">Fit</button>
+          <button class="pill-btn text-xs" id="btn-zoom-reset" title="Reset View (Ctrl+0)">1:1</button>
+        </div>
+      </div>
+
+      <!-- Mini-map Radar in Bottom Right -->
+      <div class="minimap-panel" id="minimap-box" title="Minimap Radar - Click or drag to pan">
+        <canvas id="minimap-canvas" width="150" height="100"></canvas>
+        <div class="minimap-viewport-rect" id="minimap-rect"></div>
+      </div>
+
+    </main>
+
+    <!-- Right Sidebar: Inspector, Seating Roster & Summary -->
+    <aside class="sidebar-right" id="sidebar-right">
+      
+      <!-- Tab Header for Right Sidebar -->
+      <div class="sidebar-tabs">
+        <button class="sidebar-tab-btn active" data-righttab="properties">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Properties
+        </button>
+        <button class="sidebar-tab-btn" data-righttab="seating">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          Seats (<span id="table-seats-tab-badge">0</span>)
+        </button>
+        <button class="sidebar-tab-btn" data-righttab="stats">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+          Summary
+        </button>
+      </div>
+
+      <!-- Right Tab 1: Element Properties & Transform -->
+      <div class="right-tab-content active" id="tab-properties">
+        
+        <!-- Empty Selection Placeholder -->
+        <div id="no-selection-msg" class="empty-state">
+          <div class="empty-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+          </div>
+          <h4>No Element Selected</h4>
+          <p>Click on any table, stage, or fixture in the floor plan to edit its properties and assigned guests.</p>
+        </div>
+
+        <!-- Selected Element Form -->
+        <div id="element-inspector" style="display:none;" class="inspector-form">
+          
+          <div class="inspector-header">
+            <div class="badge-type" id="inspect-type-badge">Round Table</div>
+            <button class="btn-icon-subtle" id="btn-duplicate-elem" title="Duplicate">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label>Name / Label</label>
+            <input type="text" id="prop-elem-label" class="form-control">
+          </div>
+
+          <!-- Table-Specific Capacity Fields -->
+          <div id="table-specific-props">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Seats Count</label>
+                <input type="number" id="prop-elem-seats" class="form-control" min="0" max="30">
+              </div>
+              <div class="form-group">
+                <label>Seated Guests</label>
+                <input type="text" id="prop-elem-seated-count" class="form-control" readonly style="opacity:0.7;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Dimensions & Spatial Coordinates -->
+          <div class="form-section-title">Dimensions & Rotation</div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Width (<span class="unit-label">px</span>)</label>
+              <input type="number" id="prop-elem-w" class="form-control" min="20" max="1000" step="5">
+            </div>
+            <div class="form-group">
+              <label>Height / Dia (<span class="unit-label">px</span>)</label>
+              <input type="number" id="prop-elem-h" class="form-control" min="20" max="1000" step="5">
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Rotation (°)</label>
+              <div class="input-with-action">
+                <input type="number" id="prop-elem-rot" class="form-control" min="0" max="360" step="15">
+                <button class="mini-stepper" id="btn-rot-step" title="+45°">↻</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Z-Order</label>
+              <div class="flex-row" style="gap:4px;">
+                <button class="btn btn-secondary flex-1" id="btn-send-backward" title="Send Backward">↓</button>
+                <button class="btn btn-secondary flex-1" id="btn-bring-forward" title="Bring Forward">↑</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Appearance Styling -->
+          <div class="form-section-title">Color & Styling</div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Fill Color</label>
+              <div class="color-picker-wrapper">
+                <input type="color" id="prop-elem-color" value="#2d2d38">
+                <span id="color-hex-label">#2d2d38</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Border Style</label>
+              <select id="prop-border-style" class="form-control">
+                <option value="solid">Solid Line</option>
+                <option value="dashed">Dashed</option>
+                <option value="accent">VIP Accent Glow</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:16px;">
+            <button class="btn btn-danger" id="btn-delete-element" style="width:100%;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+              Delete Element
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Right Tab 2: Table Guest Seating Manifest -->
+      <div class="right-tab-content" id="tab-seating">
+        <div class="seating-tab-header">
+          <div>
+            <h4 id="seating-tab-table-name">Select a table</h4>
+            <span class="text-muted text-xs" id="seating-tab-capacity">0 of 0 seats filled</span>
+          </div>
+          <button class="btn btn-secondary text-xs" id="btn-quick-auto-seat-table">Auto-Fill</button>
+        </div>
+
+        <div class="table-chair-list" id="table-chair-manifest">
+          <!-- Dynamic seat rows injected here -->
+        </div>
+
+        <div class="unassigned-dock">
+          <div class="flex-between" style="margin-bottom:6px;">
+            <span class="sidebar-title">Unassigned Guests (<span id="unassigned-count">0</span>)</span>
+            <button class="btn-text-sm" id="btn-manage-all-guests">Manage Directory</button>
+          </div>
+          <div class="guest-drag-pool" id="guest-drag-pool">
+            <!-- Unassigned guest chips injected here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Tab 3: Overall Venue Statistics & Capacity -->
+      <div class="right-tab-content" id="tab-stats">
+        <div class="sidebar-section">
+          <span class="sidebar-title">Event Capacity Meter</span>
+          <div class="stat-big-meter">
+            <div class="meter-bar-track">
+              <div class="meter-bar-fill" id="capacity-meter-fill" style="width: 0%;"></div>
+            </div>
+            <div class="meter-numbers">
+              <span id="stat-seated-total">0</span>
+              <small>/ <span id="stat-capacity-total">0</span> Max Capacity</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider-h"></div>
+
+        <div class="sidebar-section">
+          <span class="sidebar-title">Layout Inventory</span>
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-val" id="stat-count-tables">0</div>
+              <div class="stat-lbl">Tables</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-val" id="stat-count-fixtures">0</div>
+              <div class="stat-lbl">Fixtures</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-val" id="stat-count-guests">0</div>
+              <div class="stat-lbl">Registered Guests</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-val" id="stat-count-unseated">0</div>
+              <div class="stat-lbl">Unseated</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider-h"></div>
+
+        <div class="sidebar-section">
+          <span class="sidebar-title">Dietary Requirements Breakdown</span>
+          <div class="dietary-stats-list" id="dietary-stats-list">
+            <!-- Dietary summary injected here -->
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- ================= MODALS & DRAWERS ================= -->
+
+  <!-- 1. Guest Directory & CSV Manager Modal -->
+  <div class="modal-overlay" id="modal-guest-directory">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div class="flex-row" style="gap:10px; align-items:center;">
+          <div class="modal-icon-badge">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+          </div>
+          <div>
+            <h3>Guest Directory & Seating Roster</h3>
+            <p class="text-muted text-xs">Manage attendees, parties, dietary tags, VIP status and seating assignments.</p>
+          </div>
+        </div>
+        <button class="modal-close" data-close="modal-guest-directory">&times;</button>
+      </div>
+
+      <div class="modal-toolbar">
+        <div class="search-input-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="guest-search-input" placeholder="Search guests by name, group, or dietary tag...">
+        </div>
+        <div class="flex-row" style="gap:8px;">
+          <button class="btn btn-secondary" id="btn-import-csv">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Import CSV
+          </button>
+          <input type="file" id="csv-file-input" accept=".csv" style="display:none;">
+          <button class="btn btn-secondary" id="btn-export-csv-modal">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Export CSV
+          </button>
+          <button class="btn btn-primary" id="btn-add-new-guest">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Guest
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-table-wrap">
+        <table class="data-table" id="guests-master-table">
+          <thead>
+            <tr>
+              <th>Guest Name</th>
+              <th>Group / Party</th>
+              <th>Dietary Requirements</th>
+              <th>VIP</th>
+              <th>RSVP</th>
+              <th>Assigned Table / Seat</th>
+              <th style="width:70px; text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="guests-table-body">
+            <!-- Dynamic guest rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer flex-between">
+        <div class="text-xs text-muted">
+          Showing <span id="guest-count-visible">0</span> of <span id="guest-count-all">0</span> attendees
+        </div>
+        <div class="flex-row" style="gap:8px;">
+          <button class="btn btn-secondary" id="btn-auto-seat-all">Smart Auto-Seat All</button>
+          <button class="btn btn-danger" id="btn-clear-all-seating">Unseat All</button>
+          <button class="btn btn-primary" data-close="modal-guest-directory">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Project Templates Modal -->
+  <div class="modal-overlay" id="modal-templates">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h3>Choose Layout Template</h3>
+          <p class="text-muted text-xs">Start quickly with professionally curated event room blueprints.</p>
+        </div>
+        <button class="modal-close" data-close="modal-templates">&times;</button>
+      </div>
+
+      <div class="template-cards-grid">
+        <div class="template-card" data-load-template="wedding">
+          <div class="template-img-thumb wedding-thumb"></div>
+          <div class="template-meta">
+            <h4>Wedding Banquet Gala</h4>
+            <p>120 Guests • Head table, 12 round tables, dance floor, DJ booth, photo kiosk & bar.</p>
+            <span class="tag-pill">Most Popular</span>
+          </div>
+        </div>
+
+        <div class="template-card" data-load-template="gala">
+          <div class="template-img-thumb gala-thumb"></div>
+          <div class="template-meta">
+            <h4>Corporate Awards Gala</h4>
+            <p>240 Guests • Grand stage, VIP front rows, 24 banquet tables, dual cocktail bars.</p>
+            <span class="tag-pill">Large Scale</span>
+          </div>
+        </div>
+
+        <div class="template-card" data-load-template="conference">
+          <div class="template-img-thumb conf-thumb"></div>
+          <div class="template-meta">
+            <h4>Tech Keynote & Workshop</h4>
+            <p>80 Attendees • Main stage & screen, classroom rows, networking lounge.</p>
+            <span class="tag-pill">Corporate</span>
+          </div>
+        </div>
+
+        <div class="template-card" data-load-template="cocktail">
+          <div class="template-img-thumb cocktail-thumb"></div>
+          <div class="template-meta">
+            <h4>Cocktail Mixer & Lounge</h4>
+            <p>80 Guests • High-top standing tables, lounge sectional couches, circular bar.</p>
+            <span class="tag-pill">Networking</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer flex-between">
+        <button class="btn btn-danger" id="btn-clear-canvas-new">Blank Canvas</button>
+        <button class="btn btn-secondary" data-close="modal-templates">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Keyboard Shortcuts Modal -->
+  <div class="modal-overlay" id="modal-shortcuts">
+    <div class="modal-card modal-md">
+      <div class="modal-header">
+        <h3>Keyboard & Mouse Shortcuts</h3>
+        <button class="modal-close" data-close="modal-shortcuts">&times;</button>
+      </div>
+      <div class="shortcuts-grid">
+        <div class="shortcut-item"><kbd>V</kbd><span>Selection & Move Tool</span></div>
+        <div class="shortcut-item"><kbd>H</kbd> / <kbd>Space+Drag</kbd><span>Pan Canvas Tool</span></div>
+        <div class="shortcut-item"><kbd>M</kbd><span>Measurement Ruler Tool</span></div>
+        <div class="shortcut-item"><kbd>Ctrl + Z</kbd><span>Undo Last Change</span></div>
+        <div class="shortcut-item"><kbd>Ctrl + Y</kbd> / <kbd>Shift+Ctrl+Z</kbd><span>Redo</span></div>
+        <div class="shortcut-item"><kbd>Ctrl + D</kbd><span>Duplicate Selection</span></div>
+        <div class="shortcut-item"><kbd>Del</kbd> / <kbd>Backspace</kbd><span>Delete Selection</span></div>
+        <div class="shortcut-item"><kbd>R</kbd><span>Rotate Selection by 45°</span></div>
+        <div class="shortcut-item"><kbd>Shift + Drag</kbd><span>Marquee Box Select / 15° Angle Snap</span></div>
+        <div class="shortcut-item"><kbd>Mouse Wheel</kbd><span>Zoom in / out at cursor</span></div>
+        <div class="shortcut-item"><kbd>Ctrl + 0</kbd><span>Reset View to 100%</span></div>
+        <div class="shortcut-item"><kbd>?</kbd><span>Open This Shortcuts Guide</span></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" data-close="modal-shortcuts">Got It</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Seat Assignment Picker Popup (Contextual) -->
+  <div class="seat-picker-popup" id="seat-picker-popup" style="display:none;">
+    <div class="picker-header">
+      <div>
+        <strong id="seat-picker-title">Seat 1</strong>
+        <span class="text-xs text-muted" id="seat-picker-subtitle">Table 1</span>
+      </div>
+      <button class="picker-close" id="btn-close-seat-picker">&times;</button>
+    </div>
+    <div class="picker-body">
+      <input type="text" id="seat-search-input" class="form-control text-xs" placeholder="Search attendee...">
+      <div class="picker-guest-list" id="picker-guest-options">
+        <!-- Guest options rendered here -->
+      </div>
+      <button class="btn btn-danger text-xs" id="btn-unseat-current" style="margin-top:8px; width:100%;">
+        Empty Seat (Unassign)
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Main JavaScript App Bundle -->
+  <script src="app.js"></script>
+</body>
+</html>

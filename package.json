@@ -1,0 +1,25 @@
+{
+  "name": "interactive-floor-planner",
+  "version": "2.5.0",
+  "description": "Interactive 2D event floor planning, CAD blueprint underlay, and guest seating management web application.",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "preview": "start index.html"
+  },
+  "keywords": [
+    "floor-planner",
+    "event-planner",
+    "seating-chart",
+    "canvas-2d",
+    "cad-blueprint",
+    "interactive-layout",
+    "wedding-planner"
+  ],
+  "author": "FloorPlan Pro Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/interactive-floor-planner.git"
+  }
+}

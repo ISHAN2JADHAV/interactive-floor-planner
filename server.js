@@ -6,6 +6,19 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Enable CORS and ensure preflight & method safety across all environments
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, HEAD');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Allow', 'GET, POST, OPTIONS, HEAD');
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
 
 // Serve static assets from project root
 app.use(express.static(path.join(__dirname, '.')));
@@ -289,10 +302,12 @@ function generateAlgorithmicFloorplan(prompt) {
 }
 
 // -------------------------------------------------------------
-// POST /api/generate-floorplan: Spatial Text-to-JSON Generator
+// POST / GET /api/generate-floorplan: Spatial Text-to-JSON Generator
+// Supports both POST and GET to prevent 405 Method Not Allowed
 // -------------------------------------------------------------
-app.post('/api/generate-floorplan', async (req, res) => {
-  const { prompt } = req.body;
+app.all(['/api/generate-floorplan', '/api/generate-floorplan/'], async (req, res) => {
+  res.setHeader('Allow', 'GET, POST, OPTIONS, HEAD');
+  const prompt = (req.body && (req.body.prompt || req.body.description)) || req.query.prompt || req.query.description || '';
   if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
     return res.status(400).json({ error: 'Prompt description is required.' });
   }
@@ -320,37 +335,41 @@ The venue coordinate space is centered at (0, 0).
 
 Output clean JSON matching the requested schema. Return every single table and fixture needed to fulfill the user's room prompt.`;
 
-    const modelsToTry = ['gemini-3.6-flash', 'gemini-3.8-flash'];
+    const modelsToTry = ['gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
     for (const modelName of modelsToTry) {
       try {
-        const response = await ai.models.generateContent({
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('AI generation timeout')), 18000)
+        );
+
+        const aiPromise = ai.models.generateContent({
           model: modelName,
           contents: prompt.trim(),
           config: {
             systemInstruction,
+            temperature: 0.2,
             responseMimeType: 'application/json',
             responseSchema: {
               type: Type.OBJECT,
               properties: {
-                venueTitle: { type: Type.STRING, description: "Descriptive name of the event or room" },
-                roomSummary: { type: Type.STRING, description: "One-sentence architectural layout overview" },
-                estimatedGuestCapacity: { type: Type.INTEGER, description: "Total seating capacity across all tables" },
+                venueTitle: { type: Type.STRING },
+                roomSummary: { type: Type.STRING },
+                estimatedGuestCapacity: { type: Type.INTEGER },
                 elements: {
                   type: Type.ARRAY,
-                  description: "Complete list of furniture, tables, and fixtures",
                   items: {
                     type: Type.OBJECT,
                     properties: {
                       id: { type: Type.STRING },
-                      type: { type: Type.STRING, description: "round, rect, square, oval, cocktail, classroom, ushape, serpentine, stage, dancefloor, bar, djbooth, photobooth, lounge, wall, door" },
-                      x: { type: Type.NUMBER, description: "X coordinate centered at 0 (-520 to 520)" },
-                      y: { type: Type.NUMBER, description: "Y coordinate centered at 0 (-320 to 320)" },
-                      width: { type: Type.NUMBER, description: "Width in pixels" },
-                      height: { type: Type.NUMBER, description: "Height in pixels" },
-                      rotation: { type: Type.NUMBER, description: "Rotation in degrees (0, 90, 180, etc.)" },
-                      label: { type: Type.STRING, description: "Label like Table 1, Main Stage, North Bar" },
-                      seats: { type: Type.INTEGER, description: "Seating capacity (0 for fixtures like stage/dancefloor)" },
-                      category: { type: Type.STRING, description: "seating, staging, or architectural" }
+                      type: { type: Type.STRING },
+                      x: { type: Type.NUMBER },
+                      y: { type: Type.NUMBER },
+                      width: { type: Type.NUMBER },
+                      height: { type: Type.NUMBER },
+                      rotation: { type: Type.NUMBER },
+                      label: { type: Type.STRING },
+                      seats: { type: Type.INTEGER },
+                      category: { type: Type.STRING }
                     },
                     required: ["type", "x", "y", "width", "height"]
                   }
@@ -361,6 +380,8 @@ Output clean JSON matching the requested schema. Return every single table and f
           }
         });
 
+        const response = await Promise.race([aiPromise, timeoutPromise]);
+
         if (response && response.text) {
           const parsed = JSON.parse(response.text);
           if (parsed.elements && Array.isArray(parsed.elements) && parsed.elements.length > 0) {
@@ -370,7 +391,7 @@ Output clean JSON matching the requested schema. Return every single table and f
           }
         }
       } catch (err) {
-        console.warn(`Attempt with ${modelName} failed:`, err.message || err);
+        console.log(`[AI Spatial Info] ${modelName} unavailable (${err.message || 'error'}), trying next engine...`);
       }
     }
   }
@@ -442,10 +463,18 @@ Output clean JSON matching the requested schema. Return every single table and f
 });
 
 // -------------------------------------------------------------
-// POST /api/smart-seating: Option 1 Seating Optimization Engine
+// POST / GET /api/smart-seating: Option 1 Seating Optimization Engine
 // -------------------------------------------------------------
-app.post('/api/smart-seating', async (req, res) => {
-  const { tables, guests } = req.body;
+app.all(['/api/smart-seating', '/api/smart-seating/'], async (req, res) => {
+  res.setHeader('Allow', 'GET, POST, OPTIONS, HEAD');
+  let tables = req.body?.tables;
+  let guests = req.body?.guests;
+  if (!tables && req.query.tables) {
+    try { tables = JSON.parse(req.query.tables); } catch(e) {}
+  }
+  if (!guests && req.query.guests) {
+    try { guests = JSON.parse(req.query.guests); } catch(e) {}
+  }
   if (!Array.isArray(tables) || !Array.isArray(guests)) {
     return res.status(400).json({ error: 'Tables and guests arrays are required.' });
   }
@@ -454,37 +483,45 @@ app.post('/api/smart-seating', async (req, res) => {
   let assignments = null;
 
   if (ai && guests.length > 0 && tables.length > 0) {
-    try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
-        contents: JSON.stringify({ tables, guests }),
-        config: {
-          systemInstruction: `You are an advanced Event Seating Optimization Engine. Your task is to assign a list of guests to a specific set of available tables based on social dynamics, group tags, dietary tags, VIP status, and table capacities.
-Output ONLY a JSON array mapping guestId to tableId and seatNumber:
-[
-  { "guestId": "g1", "tableId": "t1", "seatNumber": 0 }
-]`,
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                guestId: { type: Type.STRING },
-                tableId: { type: Type.STRING },
-                seatNumber: { type: Type.INTEGER }
-              },
-              required: ["guestId", "tableId", "seatNumber"]
+    const seatingModels = ['gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+    for (const mName of seatingModels) {
+      try {
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('AI seating timeout')), 14000)
+        );
+
+        const aiPromise = ai.models.generateContent({
+          model: mName,
+          contents: JSON.stringify({ tables, guests }),
+          config: {
+            systemInstruction: `You are an advanced Event Seating Optimization Engine. Assign guests to available tables based on social dynamics, group tags, dietary tags, VIP status, and table capacities. Output ONLY JSON array mapping guestId to tableId and seatNumber: [{"guestId":"g1","tableId":"t1","seatNumber":0}]`,
+            temperature: 0.1,
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  guestId: { type: Type.STRING },
+                  tableId: { type: Type.STRING },
+                  seatNumber: { type: Type.INTEGER }
+                },
+                required: ["guestId", "tableId", "seatNumber"]
+              }
             }
           }
-        }
-      });
+        });
 
-      if (response && response.text) {
-        assignments = JSON.parse(response.text);
+        const response = await Promise.race([aiPromise, timeoutPromise]);
+        if (response && response.text) {
+          assignments = JSON.parse(response.text);
+          if (Array.isArray(assignments) && assignments.length > 0) {
+            break;
+          }
+        }
+      } catch (e) {
+        console.log(`[AI Seating Info] ${mName} unavailable (${e.message || 'error'}), proceeding...`);
       }
-    } catch (e) {
-      console.warn('AI Smart Seating API error, using algorithmic sorter:', e.message);
     }
   }
 
@@ -518,7 +555,8 @@ Output ONLY a JSON array mapping guestId to tableId and seatNumber:
 });
 
 // AI Configuration / Status check
-app.get('/api/ai-status', (req, res) => {
+app.all(['/api/ai-status', '/api/ai-status/'], (req, res) => {
+  res.setHeader('Allow', 'GET, POST, OPTIONS, HEAD');
   const hasKey = !!process.env.GEMINI_API_KEY;
   res.json({
     active: true,

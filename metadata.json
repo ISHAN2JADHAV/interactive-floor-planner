@@ -1,0 +1,6 @@
+{
+  "name": "FloorPlan Pro - Interactive Event & Seating Planner",
+  "description": "Interactive 2D event floor planning, CAD blueprint underlay, AI Text-to-Floorplan Spatial Builder with Gemini, and guest seating management web application.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

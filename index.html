@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>FloorPlan Studio Pro - Interactive Event & Seating Planner</title>
+  <title>FloorPlan Pro - Interactive Event & Seating Planner</title>
+  <meta name="description" content="Interactive 2D event floor planning, CAD blueprint underlay, AI Text-to-Floorplan Spatial Builder with Gemini, and guest seating management web application.">
+  <meta property="og:title" content="FloorPlan Pro - Interactive Event & Seating Planner">
+  <meta property="og:description" content="Interactive 2D event floor planning, CAD blueprint underlay, AI Text-to-Floorplan Spatial Builder with Gemini, and guest seating management web application.">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -76,6 +79,15 @@
       </div>
 
       <div class="divider-v"></div>
+
+      <!-- AI Text-to-Floorplan Spatial Builder -->
+      <button class="btn btn-ai-sparkle" id="btn-open-ai-builder" title="AI Text-to-Floorplan Spatial Builder (Gemini)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z"/>
+        </svg>
+        <span>AI Builder</span>
+        <span class="badge-ai-pill">Gemini</span>
+      </button>
 
       <!-- Quick Templates -->
       <button class="btn btn-secondary" id="btn-open-templates" title="Load Sample Venue Template">
@@ -157,6 +169,26 @@
       <!-- Tab Content: Elements Palette -->
       <div class="left-tab-content active" id="tab-elements">
         
+        <!-- Quick AI Spatial Builder Banner -->
+        <div class="ai-prompt-quick-card" id="btn-quick-ai-builder">
+          <div class="ai-card-glow"></div>
+          <div class="ai-card-inner">
+            <div class="ai-card-header">
+              <div class="ai-sparkle-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z"/>
+                </svg>
+              </div>
+              <div class="ai-card-title-wrap">
+                <strong>Text-to-Floorplan</strong>
+                <span class="ai-pill-tag">Gemini AI</span>
+              </div>
+            </div>
+            <p class="ai-card-desc">Describe your venue, guest count, stage & tables to generate coordinates automatically.</p>
+            <button class="btn-ai-card-action" type="button">Prompt Spatial Layout →</button>
+          </div>
+        </div>
+
         <!-- Table Shapes Section -->
         <div class="accordion-group open">
           <div class="accordion-header">
@@ -775,6 +807,195 @@
 
   <!-- ================= MODALS & DRAWERS ================= -->
 
+  <!-- 0. AI Text-to-Floorplan Spatial Builder Modal -->
+  <div class="modal-overlay" id="modal-ai-builder">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div class="flex-row" style="gap:10px; align-items:center;">
+          <div class="modal-icon-badge ai-badge-glow">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Text-to-Floorplan Spatial Builder</h3>
+            <p class="text-muted text-xs">Transform natural language room prompts into mathematically aligned 2D venue floorplans via Gemini AI.</p>
+          </div>
+        </div>
+        <div class="flex-row" style="gap:12px; align-items:center;">
+          <span class="ai-engine-status-pill" id="ai-engine-status-pill">
+            <span class="pulse-dot"></span>
+            <span id="ai-model-label">Gemini 3.8 / 3.6 Flash</span>
+          </span>
+          <button class="modal-close" data-close="modal-ai-builder">&times;</button>
+        </div>
+      </div>
+
+      <div class="ai-builder-body">
+        <!-- Left: Prompt Input & Controls -->
+        <div class="ai-builder-input-col">
+          <div class="form-group">
+            <label for="ai-prompt-input" class="ai-label-with-tip">
+              <span>Event & Venue Prompt</span>
+              <span class="ai-hint">Specify attendance, tables, stages, dance floor & fixtures</span>
+            </label>
+            <div class="ai-textarea-wrapper">
+              <textarea id="ai-prompt-input" class="ai-prompt-textarea" rows="4" placeholder="e.g., Generate an 800-guest ballroom with a center circular dance floor, front presentation stage, 2 corner cocktail bars, and 20 round banquet tables."></textarea>
+              <button class="ai-clear-prompt-btn" id="btn-clear-ai-prompt" title="Clear prompt">&times;</button>
+            </div>
+          </div>
+
+          <!-- Prompt Inspiration Chips -->
+          <div class="ai-chips-section">
+            <span class="ai-chips-title">Try an example prompt:</span>
+            <div class="ai-prompt-chips">
+              <button type="button" class="ai-chip" data-prompt="Generate an 800-guest ballroom with a center circular dance floor, front presentation stage, 2 corner cocktail bars, and 20 round banquet tables.">
+                🏛️ 800-Guest Ballroom Gala
+              </button>
+              <button type="button" class="ai-chip" data-prompt="Romantic wedding reception with a central dance floor, bridal head table, 14 round banquet tables, DJ station, photo booth, and open bar.">
+                💍 Wedding Banquet Gala
+              </button>
+              <button type="button" class="ai-chip" data-prompt="Tech keynote conference hall with a wide presentation stage, audio DJ booth, 12 classroom table rows, and a rear networking coffee bar.">
+                🎤 Tech Keynote & Workshop
+              </button>
+              <button type="button" class="ai-chip" data-prompt="Upscale cocktail lounge with 2 central island bars, 16 high-top cocktail tables, perimeter VIP lounge pods, and live music acoustic stage.">
+                🍸 VIP Cocktail Lounge
+              </button>
+              <button type="button" class="ai-chip" data-prompt="Formal academic dinner with elevated front dais table, 16 rectangular dining tables in symmetrical wings, and perimeter entry doors.">
+                🎓 Formal Academic Banquet
+              </button>
+            </div>
+          </div>
+
+          <!-- Generation Settings -->
+          <div class="ai-options-row">
+            <div class="form-group flex-1">
+              <label>Canvas Placement Mode</label>
+              <select id="ai-placement-mode" class="form-control">
+                <option value="replace">Replace Entire Canvas</option>
+                <option value="merge">Append to Existing Canvas</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label>Aisle Clearance Buffer</label>
+              <select id="ai-aisle-buffer" class="form-control">
+                <option value="standard">Standard (1.5m / 5ft)</option>
+                <option value="spacious">Spacious (2.0m / 6.5ft)</option>
+                <option value="dense">High Density (1.2m / 4ft)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="ai-checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="ai-auto-generate-guests" checked>
+              <span><strong>Auto-Populate Guest Roster:</strong> Generate matching attendees, dietary tags, and parties in the Guest Directory</span>
+            </label>
+          </div>
+
+          <div class="ai-submit-bar">
+            <button type="button" class="btn btn-ai-primary" id="btn-generate-ai-floorplan">
+              <svg class="sparkle-anim" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z"/>
+              </svg>
+              <span>Generate Floorplan with AI</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Live Breakdown & Inspection Panel -->
+        <div class="ai-builder-preview-col">
+          <div class="ai-preview-header">
+            <h4>Spatial Layout Analysis & Breakdown</h4>
+            <span class="text-muted text-xs" id="ai-engine-tag">Awaiting Prompt</span>
+          </div>
+
+          <!-- Loading Overlay -->
+          <div class="ai-loading-state" id="ai-loading-state" style="display: none;">
+            <div class="ai-spinner"></div>
+            <h5 id="ai-loading-headline">Processing Spatial Constraints...</h5>
+            <p class="text-muted text-xs" id="ai-loading-subtext">Calculating collision buffers, focal orientation, and coordinate matrix</p>
+            <div class="ai-loading-progress-bar">
+              <div class="ai-loading-progress-fill" id="ai-loading-progress-fill"></div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="ai-preview-empty" id="ai-preview-empty">
+            <div class="empty-sparkle-icon">
+              <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <circle cx="15.5" cy="8.5" r="1.5"/>
+                <path d="M7 14h10"/>
+                <path d="M12 11v6"/>
+              </svg>
+            </div>
+            <h5>Ready to Construct Your Venue</h5>
+            <p>Type an event description or click an example prompt on the left, then click <strong>Generate Floorplan with AI</strong>.</p>
+          </div>
+
+          <!-- Generated Results View -->
+          <div class="ai-preview-results" id="ai-preview-results" style="display: none;">
+            <div class="ai-venue-summary-card">
+              <div class="flex-between">
+                <div>
+                  <h4 id="ai-result-title">Grand Ballroom Layout</h4>
+                  <p class="text-muted text-xs" id="ai-result-summary">Central circular dance floor flanked by 20 round banquet tables...</p>
+                </div>
+                <div class="ai-capacity-badge">
+                  <span class="ai-cap-number" id="ai-result-capacity">200</span>
+                  <span class="ai-cap-label">Capacity</span>
+                </div>
+              </div>
+
+              <!-- Categories Summary Stats -->
+              <div class="ai-category-chips">
+                <span class="ai-cat-pill cat-seating" id="ai-count-seating">
+                  <span class="cat-dot"></span>
+                  <span id="ai-count-seating-text">20 Tables</span>
+                </span>
+                <span class="ai-cat-pill cat-staging" id="ai-count-staging">
+                  <span class="cat-dot"></span>
+                  <span id="ai-count-staging-text">4 Fixtures</span>
+                </span>
+                <span class="ai-cat-pill cat-arch" id="ai-count-arch">
+                  <span class="cat-dot"></span>
+                  <span id="ai-count-arch-text">0 Architectural</span>
+                </span>
+              </div>
+            </div>
+
+            <div class="ai-elements-table-wrap">
+              <div class="flex-between" style="margin-bottom: 8px;">
+                <span class="sidebar-title">Generated Element Coordinates (<span id="ai-result-count">24</span>)</span>
+                <span class="text-muted text-xs">Origin: (0,0) Center</span>
+              </div>
+              <div class="ai-elements-list" id="ai-elements-list">
+                <!-- Dynamic Element Rows injected here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer flex-between">
+        <div class="text-xs text-muted">
+          <span id="ai-footer-info">Prompt-to-coordinate mapping powered by Google AI Studio</span>
+        </div>
+        <div class="flex-row" style="gap:8px;">
+          <button type="button" class="btn btn-secondary" data-close="modal-ai-builder">Cancel</button>
+          <button type="button" class="btn btn-primary" id="btn-apply-ai-floorplan" disabled>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Apply to Canvas & Draw
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 1. Guest Directory & CSV Manager Modal -->
   <div class="modal-overlay" id="modal-guest-directory">
     <div class="modal-card modal-lg">
@@ -953,5 +1174,7 @@
 
   <!-- Main JavaScript App Bundle -->
   <script src="app.js"></script>
+  <!-- AI Text-to-Floorplan Spatial Builder & Smart Seating Module -->
+  <script src="ai-spatial-builder.js"></script>
 </body>
 </html>

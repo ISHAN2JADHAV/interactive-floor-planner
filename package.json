@@ -4,8 +4,9 @@
   "description": "Interactive 2D event floor planning, CAD blueprint underlay, and guest seating management web application.",
   "main": "index.html",
   "scripts": {
-    "start": "npx serve .",
-    "preview": "start index.html"
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "node -e \"console.log('Build complete')\""
   },
   "keywords": [
     "floor-planner",
@@ -21,5 +22,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/interactive-floor-planner.git"
+  },
+  "dependencies": {
+    "@google/genai": "^2.22.0",
+    "express": "^5.2.1"
   }
 }

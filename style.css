@@ -52,19 +52,31 @@ body {
 }
 
 /* Custom Scrollbars */
+*,
+*::before,
+*::after {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.35) rgba(15, 16, 24, 0.4);
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
+  background: rgba(15, 16, 24, 0.4);
   border-radius: 4px;
 }
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.35);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-dim);
+  background: rgba(99, 102, 241, 0.65);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Utility Helpers */
@@ -107,12 +119,21 @@ body {
   padding: 0 16px;
   z-index: 50;
   box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.app-header::-webkit-scrollbar {
+  display: none;
 }
 
 .header-left, .header-right {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .app-brand {
@@ -466,6 +487,9 @@ body {
   display: none;
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding: 14px;
   flex-direction: column;
   gap: 16px;
@@ -1209,8 +1233,11 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 260px;
+  max-height: 280px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-right: 4px;
 }
 
 .chair-row {
@@ -1266,11 +1293,14 @@ body {
 .guest-drag-pool {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   align-content: flex-start;
-  max-height: 200px;
+  max-height: 220px;
+  padding-right: 4px;
 }
 
 .guest-chip {
@@ -1362,6 +1392,11 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-right: 4px;
 }
 
 .dietary-stat-item {
@@ -1383,6 +1418,9 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 24px 16px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-overlay.open {
@@ -1396,15 +1434,23 @@ body {
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
-  max-height: 85vh;
-  width: 90%;
+  max-height: calc(100vh - 60px);
+  width: 92%;
   max-width: 600px;
   overflow: hidden;
+  margin: auto;
   animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.modal-lg { max-width: 950px; height: 700px; }
-.modal-md { max-width: 500px; }
+.modal-lg {
+  max-width: 950px;
+  max-height: calc(100vh - 60px);
+  height: min(720px, calc(100vh - 60px));
+}
+.modal-md {
+  max-width: 520px;
+  max-height: calc(100vh - 60px);
+}
 
 @keyframes modalPop {
   from { opacity: 0; transform: scale(0.96); }
@@ -1477,12 +1523,17 @@ body {
 
 .modal-table-wrap {
   flex: 1;
+  overflow-x: auto;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding: 0;
+  max-height: calc(85vh - 180px);
 }
 
 .data-table {
   width: 100%;
+  min-width: 720px;
   border-collapse: collapse;
   font-size: 0.8rem;
   text-align: left;
@@ -1523,7 +1574,10 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 14px;
   padding: 20px;
+  max-height: calc(85vh - 140px);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .template-card {
@@ -1573,6 +1627,10 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   padding: 20px;
+  max-height: calc(85vh - 140px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .shortcut-item {
@@ -1619,12 +1677,15 @@ kbd {
 }
 
 .picker-guest-list {
-  max-height: 160px;
+  max-height: 200px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-top: 6px;
+  padding-right: 2px;
 }
 
 .picker-guest-item {
@@ -1847,6 +1908,7 @@ kbd {
   display: flex;
   flex: 1;
   min-height: 480px;
+  max-height: calc(88vh - 130px);
   overflow: hidden;
 }
 
@@ -1858,6 +1920,8 @@ kbd {
   flex-direction: column;
   gap: 14px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .ai-builder-preview-col {
@@ -1867,6 +1931,8 @@ kbd {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   position: relative;
 }
 
@@ -1959,6 +2025,11 @@ kbd {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  max-height: 120px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-right: 2px;
 }
 
 .ai-chip {
@@ -2423,6 +2494,10 @@ kbd {
   top: calc(100% + 10px);
   right: 0;
   width: 320px;
+  max-height: calc(100vh - 76px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   background: #151620;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
@@ -2545,8 +2620,11 @@ kbd {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 160px;
+  max-height: 180px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-right: 4px;
 }
 
 .saved-project-item {
@@ -2651,8 +2729,9 @@ kbd {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 24px 16px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .auth-card-wrapper {
@@ -2660,13 +2739,14 @@ kbd {
   grid-template-columns: 1.15fr 1fr;
   width: 100%;
   max-width: 980px;
-  min-height: 580px;
+  max-height: calc(100vh - 60px);
   background: #111219;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.75);
   overflow: hidden;
   position: relative;
+  margin: auto;
   animation: authCardEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -2707,12 +2787,16 @@ kbd {
 
 /* Left Hero Branding Side */
 .auth-hero-panel {
-  padding: 36px 32px;
+  padding: 32px;
   background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 60%), #0c0d14;
   border-right: 1px solid rgba(255, 255, 255, 0.07);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  max-height: calc(100vh - 60px);
 }
 
 .auth-brand-badge {
@@ -2863,10 +2947,14 @@ kbd {
 
 /* Right Auth Form Side */
 .auth-form-panel {
-  padding: 36px 32px;
+  padding: 32px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  max-height: calc(100vh - 60px);
 }
 
 .auth-tabs-toggle {

@@ -39,7 +39,7 @@
     .then(r => r.ok ? r.json() : null)
     .then(status => {
       if (status && status.hasKey && aiModelLabel) {
-        aiModelLabel.textContent = 'Gemini 3.8 / 3.6 Flash';
+        aiModelLabel.textContent = 'Gemini AI Spatial Engine';
       } else if (aiModelLabel) {
         aiModelLabel.textContent = 'Spatial Layout Engine';
       }

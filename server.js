@@ -335,7 +335,7 @@ The venue coordinate space is centered at (0, 0).
 
 Output clean JSON matching the requested schema. Return every single table and fixture needed to fulfill the user's room prompt.`;
 
-    const modelsToTry = ['gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+    const modelsToTry = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-3.6-flash'];
     for (const modelName of modelsToTry) {
       try {
         const timeoutPromise = new Promise((_, reject) =>
@@ -390,8 +390,8 @@ Output clean JSON matching the requested schema. Return every single table and f
             break;
           }
         }
-      } catch (err) {
-        console.log(`[AI Spatial Info] ${modelName} unavailable (${err.message || 'error'}), trying next engine...`);
+      } catch (_ignored) {
+        // Continue seamlessly to next candidate model
       }
     }
   }
@@ -483,7 +483,7 @@ app.all(['/api/smart-seating', '/api/smart-seating/'], async (req, res) => {
   let assignments = null;
 
   if (ai && guests.length > 0 && tables.length > 0) {
-    const seatingModels = ['gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+    const seatingModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-3.6-flash'];
     for (const mName of seatingModels) {
       try {
         const timeoutPromise = new Promise((_, reject) =>
@@ -519,8 +519,8 @@ app.all(['/api/smart-seating', '/api/smart-seating/'], async (req, res) => {
             break;
           }
         }
-      } catch (e) {
-        console.log(`[AI Seating Info] ${mName} unavailable (${e.message || 'error'}), proceeding...`);
+      } catch (_ignored) {
+        // Proceed silently to next candidate model
       }
     }
   }
@@ -552,6 +552,233 @@ app.all(['/api/smart-seating', '/api/smart-seating/'], async (req, res) => {
     success: true,
     assignments
   });
+});
+
+// --- In-Memory Authentication & Project Workspace Store ---
+const USERS = [
+  {
+    id: 'usr_ishan_01',
+    email: 'ishan@floorplanpro.com',
+    password: 'password123',
+    name: 'Ishan Jadhav',
+    role: 'planner',
+    roleTitle: 'Lead Event Architect',
+    initials: 'IJ',
+    avatarGradient: 'linear-gradient(135deg, #6366f1, #a855f7)',
+    joined: 'Jan 2026',
+    projects: [
+      { id: 'proj_01', name: 'Grand Ballroom Gala 2026', guests: 96, tables: 12, modified: 'Just now' },
+      { id: 'proj_02', name: 'Rooftop Summit Keynote', guests: 64, tables: 8, modified: '2 hours ago' },
+      { id: 'proj_03', name: 'Sunset Terrace Reception', guests: 120, tables: 15, modified: 'Yesterday' }
+    ]
+  },
+  {
+    id: 'usr_elena_02',
+    email: 'elena@grandballroom.com',
+    password: 'password123',
+    name: 'Elena Rostova',
+    role: 'venue',
+    roleTitle: 'Grand Ballroom Director',
+    initials: 'ER',
+    avatarGradient: 'linear-gradient(135deg, #0ea5e9, #10b981)',
+    joined: 'Feb 2026',
+    projects: [
+      { id: 'proj_venue_01', name: 'Grand Ballroom Master CAD', guests: 160, tables: 20, modified: '3 days ago' }
+    ]
+  },
+  {
+    id: 'usr_marcus_03',
+    email: 'marcus@summit.org',
+    password: 'password123',
+    name: 'Marcus Vance',
+    role: 'client',
+    roleTitle: 'VIP Host & Client',
+    initials: 'MV',
+    avatarGradient: 'linear-gradient(135deg, #f59e0b, #ef4444)',
+    joined: 'Mar 2026',
+    projects: [
+      { id: 'proj_vip_01', name: 'Executive Retreat Seating', guests: 32, tables: 4, modified: '5 hours ago' }
+    ]
+  }
+];
+
+const SESSIONS = new Map();
+
+function generateToken(userId) {
+  const token = `fpsess_${userId}_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+  SESSIONS.set(token, {
+    userId,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
+  });
+  return token;
+}
+
+function getUserFromToken(token) {
+  if (!token) return null;
+  const cleanToken = token.replace(/^Bearer\s+/i, '').trim();
+  const session = SESSIONS.get(cleanToken);
+  if (!session) return null;
+  if (Date.now() > session.expiresAt) {
+    SESSIONS.delete(cleanToken);
+    return null;
+  }
+  return USERS.find(u => u.id === session.userId) || null;
+}
+
+// Public demo users list for aesthetic quick-login
+app.get('/api/auth/demo-users', (req, res) => {
+  const publicProfiles = USERS.map(u => ({
+    id: u.id,
+    email: u.email,
+    name: u.name,
+    role: u.role,
+    roleTitle: u.roleTitle,
+    initials: u.initials,
+    avatarGradient: u.avatarGradient
+  }));
+  res.json({ success: true, users: publicProfiles });
+});
+
+// Authentication: Login
+app.post('/api/auth/login', (req, res) => {
+  const { email, password } = req.body || {};
+  if (!email) {
+    return res.status(400).json({ success: false, error: 'Email address is required.' });
+  }
+
+  const cleanEmail = String(email).trim().toLowerCase();
+  let user = USERS.find(u => u.email.toLowerCase() === cleanEmail);
+
+  if (!user) {
+    // Graceful onboarding: Auto-create account for new users
+    const defaultName = cleanEmail.split('@')[0].replace(/[._-]/g, ' ')
+      .replace(/\b\w/g, c => c.toUpperCase());
+    const initials = defaultName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'FP';
+    user = {
+      id: `usr_${Date.now()}`,
+      email: cleanEmail,
+      password: password || 'demo123',
+      name: defaultName,
+      role: 'planner',
+      roleTitle: 'Event Architect',
+      initials,
+      avatarGradient: 'linear-gradient(135deg, #6366f1, #14b8a6)',
+      joined: 'Just now',
+      projects: [
+        { id: `proj_${Date.now()}`, name: 'Grand Ballroom Gala 2026', guests: 96, tables: 12, modified: 'Just now' }
+      ]
+    };
+    USERS.push(user);
+  }
+
+  const token = generateToken(user.id);
+  const safeUser = { ...user };
+  delete safeUser.password;
+
+  res.json({
+    success: true,
+    message: `Welcome back, ${user.name}!`,
+    token,
+    user: safeUser
+  });
+});
+
+// Authentication: Register
+app.post('/api/auth/register', (req, res) => {
+  const { name, email, password, role } = req.body || {};
+  if (!name || !email) {
+    return res.status(400).json({ success: false, error: 'Name and email are required.' });
+  }
+
+  const cleanEmail = String(email).trim().toLowerCase();
+  const existing = USERS.find(u => u.email.toLowerCase() === cleanEmail);
+  if (existing) {
+    const token = generateToken(existing.id);
+    const safeUser = { ...existing };
+    delete safeUser.password;
+    return res.json({ success: true, token, user: safeUser });
+  }
+
+  const roleMap = {
+    planner: 'Lead Event Architect',
+    venue: 'Venue Operations Director',
+    client: 'Event Host & VIP Client',
+    caterer: 'Catering & Banquet Director'
+  };
+
+  const initials = String(name).trim().split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'FP';
+  const newUser = {
+    id: `usr_${Date.now()}`,
+    email: cleanEmail,
+    password: password || 'pass123',
+    name: String(name).trim(),
+    role: role || 'planner',
+    roleTitle: roleMap[role] || 'Event Architect',
+    initials,
+    avatarGradient: 'linear-gradient(135deg, #8b5cf6, #3b82f6)',
+    joined: 'Today',
+    projects: [
+      { id: `proj_${Date.now()}`, name: 'Grand Ballroom Gala 2026', guests: 96, tables: 12, modified: 'Just now' }
+    ]
+  };
+  USERS.push(newUser);
+
+  const token = generateToken(newUser.id);
+  const safeUser = { ...newUser };
+  delete safeUser.password;
+
+  res.json({
+    success: true,
+    message: `Welcome to FloorPlan Pro, ${newUser.name}!`,
+    token,
+    user: safeUser
+  });
+});
+
+// Authentication: Current User
+app.get('/api/auth/me', (req, res) => {
+  const authHeader = req.headers.authorization || req.query.token;
+  const user = getUserFromToken(authHeader);
+  if (!user) {
+    return res.status(401).json({ success: false, error: 'No active session or token expired.' });
+  }
+  const safeUser = { ...user };
+  delete safeUser.password;
+  res.json({ success: true, user: safeUser });
+});
+
+// Authentication: Switch Active Role
+app.post('/api/auth/switch-role', (req, res) => {
+  const authHeader = req.headers.authorization || req.body.token;
+  const user = getUserFromToken(authHeader);
+  if (!user) {
+    return res.status(401).json({ success: false, error: 'Unauthorized.' });
+  }
+  const { role } = req.body;
+  const roleTitles = {
+    planner: 'Lead Event Architect',
+    venue: 'Venue Operations Director',
+    client: 'Event Host & VIP Client',
+    caterer: 'Catering & Banquet Director'
+  };
+  if (roleTitles[role]) {
+    user.role = role;
+    user.roleTitle = roleTitles[role];
+  }
+  const safeUser = { ...user };
+  delete safeUser.password;
+  res.json({ success: true, user: safeUser });
+});
+
+// Authentication: Logout
+app.post('/api/auth/logout', (req, res) => {
+  const authHeader = req.headers.authorization || req.body.token;
+  if (authHeader) {
+    const cleanToken = authHeader.replace(/^Bearer\s+/i, '').trim();
+    SESSIONS.delete(cleanToken);
+  }
+  res.json({ success: true, message: 'Signed out successfully.' });
 });
 
 // AI Configuration / Status check

@@ -142,6 +142,72 @@
       <button class="icon-btn" id="btn-shortcuts-modal" title="Keyboard Shortcuts (?)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       </button>
+
+      <div class="divider-v"></div>
+
+      <!-- User Account & Auth Header Control -->
+      <div class="user-auth-header-wrap" id="user-auth-header-wrap">
+        <!-- Logged-in Profile Button -->
+        <button class="user-profile-btn" id="user-profile-btn" title="Account & Workspace">
+          <div class="user-avatar-badge" id="header-user-avatar">
+            <span id="header-user-initials">IJ</span>
+            <span class="status-dot-mini online"></span>
+          </div>
+          <div class="user-meta-compact">
+            <span class="user-name-text" id="header-user-name">Ishan Jadhav</span>
+            <span class="user-role-text" id="header-user-role">Lead Architect</span>
+          </div>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="chevron-down-icon"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+
+        <!-- Logged-out Sign In Trigger Button -->
+        <button class="btn btn-outline-auth" id="btn-header-login" style="display:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span>Sign In</span>
+        </button>
+
+        <!-- User Profile Dropdown Menu -->
+        <div class="user-profile-dropdown" id="user-profile-dropdown" style="display:none;">
+          <div class="dropdown-profile-header">
+            <div class="avatar-large" id="dropdown-user-avatar">IJ</div>
+            <div class="profile-details">
+              <h4 id="dropdown-user-name">Ishan Jadhav</h4>
+              <p class="user-email-text" id="dropdown-user-email">ishan@floorplanpro.com</p>
+              <span class="badge-role-pill" id="dropdown-user-role">Lead Event Architect</span>
+            </div>
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <div class="dropdown-section-title">ACTIVE WORKSPACE ROLE</div>
+          <div class="role-selector-pill-group" id="header-role-selector">
+            <button class="role-pill-btn active" data-role="planner">Planner</button>
+            <button class="role-pill-btn" data-role="venue">Venue</button>
+            <button class="role-pill-btn" data-role="client">Client</button>
+            <button class="role-pill-btn" data-role="caterer">Caterer</button>
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <div class="dropdown-section-title">SAVED BLUEPRINTS</div>
+          <div class="saved-projects-list" id="saved-projects-list">
+            <!-- Dynamically populated -->
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <div class="dropdown-actions-footer">
+            <button class="dropdown-action-btn" id="btn-open-login-modal">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+              Switch Account
+            </button>
+            <button class="dropdown-action-btn text-danger" id="btn-logout">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -1169,11 +1235,233 @@
     </div>
   </div>
 
+  <!-- ================= AUTHENTICATION & LOGIN PORTAL MODAL ================= -->
+  <div class="modal-overlay auth-modal-overlay" id="modal-auth-portal" style="display:none;">
+    <div class="auth-card-wrapper">
+      <button class="modal-close auth-modal-close" id="btn-close-auth-modal" title="Close / Continue">&times;</button>
+      
+      <!-- Split Left: Architectural Branding & Features -->
+      <div class="auth-hero-panel">
+        <div class="auth-brand-badge">
+          <div class="brand-logo-glow">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3" ry="3"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <circle cx="15.5" cy="8.5" r="1.5"></circle>
+              <circle cx="12" cy="15.5" r="1.5"></circle>
+              <path d="M7 12h10"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="auth-brand-name">FloorPlan<span class="gradient-text">Pro</span></div>
+            <div class="auth-brand-tagline">Spatial Intelligence Studio</div>
+          </div>
+        </div>
+
+        <div class="auth-hero-content">
+          <h2 class="auth-hero-headline">Design Grand Venues with Precision & Ease</h2>
+          <p class="auth-hero-desc">
+            The modern interactive platform for luxury galas, corporate summits, banquet layouts, and millimeter-accurate seating charts.
+          </p>
+
+          <div class="auth-feature-list">
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </div>
+              <div class="auth-feature-text">
+                <strong>Gemini AI Spatial Engine</strong>
+                <span>Natural language text-to-floorplan generation in seconds.</span>
+              </div>
+            </div>
+
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div class="auth-feature-text">
+                <strong>Intelligent Guest & Seating Roster</strong>
+                <span>Dietary flags, VIP proximity tables, and auto-grouping algorithms.</span>
+              </div>
+            </div>
+
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+              </div>
+              <div class="auth-feature-text">
+                <strong>CAD & Blueprint Vector Calibration</strong>
+                <span>Real-world scale rulers, 4K raster & SVG blueprints.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="auth-metrics-bar">
+            <div class="auth-metric">
+              <span class="metric-number">14,800+</span>
+              <span class="metric-label">Venues Created</span>
+            </div>
+            <div class="auth-metric-divider"></div>
+            <div class="auth-metric">
+              <span class="metric-number">99.9%</span>
+              <span class="metric-label">Spatial Precision</span>
+            </div>
+            <div class="auth-metric-divider"></div>
+            <div class="auth-metric">
+              <span class="metric-number">4K</span>
+              <span class="metric-label">Print Vector Export</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-hero-footer">
+          <p class="auth-quote">“FloorPlan Pro cut our ballroom staging time from 6 hours to 10 minutes.”</p>
+          <span class="auth-quotee">— The Ritz-Carlton Events Directorate</span>
+        </div>
+      </div>
+
+      <!-- Split Right: Interactive Auth Form & Quick Demo -->
+      <div class="auth-form-panel">
+        <div class="auth-header-tabs">
+          <div class="auth-tabs-toggle">
+            <button class="auth-tab-btn active" id="tab-auth-login" data-tab="login">Sign In</button>
+            <button class="auth-tab-btn" id="tab-auth-register" data-tab="register">Create Account</button>
+          </div>
+        </div>
+
+        <!-- Quick 1-Click Demo Profiles -->
+        <div class="auth-quick-demo-box">
+          <div class="quick-demo-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span>QUICK DEMO PROFILES (1-CLICK ACCESS)</span>
+          </div>
+          <div class="demo-profiles-grid" id="demo-profiles-container">
+            <button class="demo-profile-chip" data-email="ishan@floorplanpro.com" data-name="Ishan Jadhav" data-role="planner">
+              <div class="demo-chip-avatar" style="background: linear-gradient(135deg, #6366f1, #a855f7);">IJ</div>
+              <div class="demo-chip-meta">
+                <span class="demo-chip-name">Ishan Jadhav</span>
+                <span class="demo-chip-role">Lead Architect</span>
+              </div>
+            </button>
+            <button class="demo-profile-chip" data-email="elena@grandballroom.com" data-name="Elena Rostova" data-role="venue">
+              <div class="demo-chip-avatar" style="background: linear-gradient(135deg, #0ea5e9, #10b981);">ER</div>
+              <div class="demo-chip-meta">
+                <span class="demo-chip-name">Elena Rostova</span>
+                <span class="demo-chip-role">Venue Director</span>
+              </div>
+            </button>
+            <button class="demo-profile-chip" data-email="marcus@summit.org" data-name="Marcus Vance" data-role="client">
+              <div class="demo-chip-avatar" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">MV</div>
+              <div class="demo-chip-meta">
+                <span class="demo-chip-name">Marcus Vance</span>
+                <span class="demo-chip-role">VIP Host & Client</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="auth-divider-line">
+          <span>or continue with email credentials</span>
+        </div>
+
+        <!-- Feedback Alert Banner -->
+        <div class="auth-alert" id="auth-alert" style="display:none;"></div>
+
+        <!-- Auth Form -->
+        <form id="auth-form" class="auth-form" onsubmit="return false;">
+          <!-- Name Field (Register only) -->
+          <div class="form-group" id="group-auth-name" style="display:none;">
+            <label for="auth-name-input" class="form-label">Full Name</label>
+            <div class="input-with-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="auth-name-input" class="form-input" placeholder="e.g., Alexandra Wright">
+            </div>
+          </div>
+
+          <!-- Email Field -->
+          <div class="form-group">
+            <label for="auth-email-input" class="form-label">Work Email</label>
+            <div class="input-with-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <input type="email" id="auth-email-input" class="form-input" placeholder="architect@venue.com" required value="ishan@floorplanpro.com">
+            </div>
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group">
+            <div class="form-label-row">
+              <label for="auth-password-input" class="form-label">Password</label>
+              <button type="button" class="btn-text-link" id="btn-forgot-password">Forgot password?</button>
+            </div>
+            <div class="input-with-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="auth-password-input" class="form-input" placeholder="Enter password" required value="password123">
+              <button type="button" class="icon-toggle-pwd" id="btn-toggle-password" title="Show / Hide Password">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Role Selection (Register only) -->
+          <div class="form-group" id="group-auth-role" style="display:none;">
+            <label class="form-label">Your Primary Role</label>
+            <div class="role-grid-picker">
+              <label class="role-option active">
+                <input type="radio" name="auth-role" value="planner" checked>
+                <span class="role-badge-title">Event Architect</span>
+                <span class="role-badge-sub">Layouts & Seating</span>
+              </label>
+              <label class="role-option">
+                <input type="radio" name="auth-role" value="venue">
+                <span class="role-badge-title">Venue Ops</span>
+                <span class="role-badge-sub">CAD & Approvals</span>
+              </label>
+              <label class="role-option">
+                <input type="radio" name="auth-role" value="client">
+                <span class="role-badge-title">VIP Client</span>
+                <span class="role-badge-sub">Review & Roster</span>
+              </label>
+              <label class="role-option">
+                <input type="radio" name="auth-role" value="caterer">
+                <span class="role-badge-title">Banquet / Caterer</span>
+                <span class="role-badge-sub">Dietary Needs</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="auth-extra-row">
+            <label class="custom-checkbox">
+              <input type="checkbox" id="auth-remember-me" checked>
+              <span class="checkbox-box"></span>
+              <span class="checkbox-label">Keep me signed in for 30 days</span>
+            </label>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-auth-submit" id="btn-auth-submit">
+            <span id="auth-submit-text">Enter Spatial Studio</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+
+          <!-- Guest / Anonymous Explorer Mode -->
+          <div class="auth-guest-option">
+            <span>Just exploring?</span>
+            <button type="button" class="btn-text-link guest-link" id="btn-guest-continue">
+              Continue as Guest (No sign-in required) &rarr;
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Main JavaScript App Bundle -->
   <script src="app.js"></script>
+  <!-- Authentication & User Session Manager -->
+  <script src="auth.js"></script>
   <!-- AI Text-to-Floorplan Spatial Builder & Smart Seating Module -->
   <script src="ai-spatial-builder.js"></script>
 </body>
